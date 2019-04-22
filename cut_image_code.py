@@ -125,7 +125,7 @@ def delete_line(img):
                     if (point_number <= 4) and ((not angle3) or (not angle2)):
                         img.putpixel((delete_index[i][j][k], index_list[i] + j), 255)
 
-    img.save('C:/Users/jwt/Desktop/out/test.png')                       
+    return img                  
                 
 def find_cut_location(labels, stats, index_ori):
     # 对连通区域进行处理
@@ -290,7 +290,7 @@ def find_cut_location(labels, stats, index_ori):
     return cut_loc,label_re       
 
 
-def two_value(image,filename,cut_image_save_dir,train):
+def two_value(image,train):
     # 灰度图
     lim = image.convert('L')
     original_data = image.getdata()
@@ -305,13 +305,14 @@ def two_value(image,filename,cut_image_save_dir,train):
             table.append(1)
 
     bim = lim.point(table, '1')
-    bim.save('C:/Users/jwt/Desktop/out/test.png')
     
-    imag = Image.open('C:/Users/jwt/Desktop/out/test.png')
-    delete_line(imag)
-        
+    for i in range(23):
+        for j in range(60):
+            bim.putpixel((j, i), 255*bim.getdata()[i*60+j])
+         
+    bim_copy = bim.copy()
+    imag = delete_line(bim_copy)
     # 获取连通域
-    imag = Image.open('C:/Users/jwt/Desktop/out/test.png')
     data = imag.getdata()
     data = np.matrix(data)
     data = [1-item/255 for item in data]
@@ -344,37 +345,32 @@ def two_value(image,filename,cut_image_save_dir,train):
     h = 23
 
     if cut_location:
+        cut_result=[]
         for i in range(len(cut_location)):
-            image = Image.open('C:/Users/jwt/Desktop/out/test.png')
+            image = imag.copy()
             box = (cut_location[i][0], 0, cut_location[i][1], h)
             for j in range(60):
                 for k in range(23):
                     if (labels[k,j] not in label[i]):
                         image.putpixel((j, k), 255)
 
-            if train==1:
-                if filename.split('/')[6][i] in ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']:
-                    dirs = cut_image_save_dir + filename.split('/')[6][i]+'_'
-                else:
-                    dirs = cut_image_save_dir + filename.split('/')[6][i]
-
-                if not os.path.exists(dirs):
-                    os.makedirs(dirs)
-                imag.crop(box).resize((15,23)).save(dirs+'/'+filename.split('/')[6][:4]+'_'+str(i) + ".png")
+            if len(label[i])>1:
+                cut_result.append(bim.crop(box).resize((15,23)))
             else:
-                imag.crop(box).resize((15, 23)).save(cut_image_save_dir + str(i) + ".png")
+                cut_result.append(imag.crop(box).resize((15, 23)))
+            # cut_result[i].show()
+        return cut_result
 
 
 if __name__=="__main__":
     train=1
     path = r"C:/Users/jwt/Desktop/img/test/"  # 文件夹目录
-    cut_image_dir = r"C:/Users/jwt/Desktop/study/cut_image_new/"
     files = os.listdir(path)  # 得到文件夹下的所有文件名称
     for file in files:  # 遍历文件夹
         print(file)
         filename=path+file
         image = Image.open(filename)
-        two_value(image,filename,cut_image_dir,train)
+        result = two_value(image,train)
 
 
     

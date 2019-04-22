@@ -31,15 +31,12 @@ for image_file in captcha_image_files:
     # Load the image and convert it to grayscale
     train=0
     image = Image.open(image_file)  # 打开文件
-    cut_image_dir = r"./cut_images/"
-    filename = r"C:/Users/jwt/Desktop/captcha_code//0123.png"
-    dlp.two_value(image, filename,cut_image_dir,train)
+    cut_image_result = dlp.two_value(image, train)
 
-
+    
     letters = []
     for i in range(4):
-        letter_image = cv2.imread('./cut_images/'+str(i)+'.png')
-        letter_image = cv2.cvtColor(letter_image, cv2.COLOR_BGR2GRAY)
+        letter_image = cv2.cvtColor(np.array(cut_image_result[i].convert('RGB')), cv2.COLOR_BGR2GRAY)
 
         # Add a third channel dimension to the image to make Keras happy
         letter_image = np.expand_dims(letter_image, axis=2)
@@ -52,5 +49,5 @@ for image_file in captcha_image_files:
         letters.append(letter)
 
     captcha_text = "".join(letters)
-    print("图片名称为：",image_file.split('_')[2],"CAPTCHA text is: {}".format(captcha_text))
+    print("图片名称为：",image_file.split('_')[1],"CAPTCHA text is: {}".format(captcha_text))
 
